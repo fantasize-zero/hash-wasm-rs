@@ -21,20 +21,28 @@ await initWasm();
 
 // Compute hash from text input
 const text = "Hello, world!";
-const result = new HasherWrapper(text, HashType.MD5).result();
+const hasher = new HasherWrapper(HashType.MD5, text);
+const result = await hasher.result();
 console.log(result.hex);
 
 // Compute hash from file data
 const file = new File(["Hello, world!"], "hello.txt");
-const result = new HasherWrapper(file, HashType.MD5).result();
+const hasher = new HasherWrapper(HashType.MD5, file);
+const result = await hasher.result();
 console.log(result.hex);
 ```
+
+## Example usage
+
+[Example large file hash calculation](./index.html)
 
 ## Development
 
 ```bash
 # Build WebAssembly library
 wasm-pack build --target web --release
+# Build WebAssembly library with SIMD support
+RUSTFLAGS="-C target-feature=+simd128" wasm-pack build --target web --release
 
 # Serve the demo page
 python3 -m http.server
