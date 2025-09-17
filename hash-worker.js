@@ -24,7 +24,7 @@ self.onmessage = async (e) => {
         // 传入算法类型和分片数据，创建 HashWorker
         hashWorker = new self.WasmModule.HashWorker(algorithm, chunkData);
       }
-      const hash = hashWorker.process_chunk();
+      const hash = await hashWorker.process_chunk();
       self.postMessage({
         type: "chunk_result",
         hash: hash,

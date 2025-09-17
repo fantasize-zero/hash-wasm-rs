@@ -1,12 +1,13 @@
+use std::hash::Hash;
+
+use crate::hash::{file_render::get_data_as_bytes, hash_result::HashResult, hash_type::HashType};
 use blake3::Hasher;
 use hex::ToHex;
+use js_sys::Uint8Array;
 use md5::{Digest, Md5};
 use sha2::{Sha256, Sha512};
 use sha3::{Sha3_256, Sha3_512};
-use wasm_bindgen::prelude::*;
-use web_sys::js_sys::Uint8Array;
-
-use crate::hash::{hash_result::HashResult, hash_type::HashType};
+use wasm_bindgen::{convert::WasmAbi, prelude::*};
 
 pub const CHUNK_SIZE: usize = 1024 * 1024;
 
@@ -68,41 +69,44 @@ impl HasherWrapper {
         wrapper
     }
 
-    pub fn update(&mut self) {
-        let unit8_array = Uint8Array::new(&self.input).to_vec();
-
-        match self.hash_type {
-            HashType::MD5 => self
-                .md5
-                .as_mut()
-                .expect("MD5 hasher not initialized")
-                .update(&unit8_array),
-            HashType::BLAKE3 => {
-                self.blake3
+    pub async fn update(&mut self) {
+        match get_data_as_bytes(&self.input).await {
+            Ok(data_array) => match self.hash_type {
+                HashType::MD5 => self
+                    .md5
                     .as_mut()
-                    .expect("BLAKE3 hasher not initialized")
-                    .update(&unit8_array);
+                    .expect("MD5 hasher not initialized")
+                    .update(&data_array),
+                HashType::BLAKE3 => {
+                    self.blake3
+                        .as_mut()
+                        .expect("BLAKE3 hasher not initialized")
+                        .update(&data_array);
+                }
+                HashType::SHA256 => self
+                    .sha256
+                    .as_mut()
+                    .expect("SHA256 hasher not initialized")
+                    .update(&data_array),
+                HashType::SHA512 => self
+                    .sha512
+                    .as_mut()
+                    .expect("SHA512 hasher not initialized")
+                    .update(&data_array),
+                HashType::SHA3_256 => self
+                    .sha3_256
+                    .as_mut()
+                    .expect("SHA3-256 hasher not initialized")
+                    .update(&data_array),
+                HashType::SHA3_512 => self
+                    .sha3_512
+                    .as_mut()
+                    .expect("SHA3-512 hasher not initialized")
+                    .update(&data_array),
+            },
+            Err(e) => {
+                eprintln!("Error converting input to bytes: {:#?}", e);
             }
-            HashType::SHA256 => self
-                .sha256
-                .as_mut()
-                .expect("SHA256 hasher not initialized")
-                .update(&unit8_array),
-            HashType::SHA512 => self
-                .sha512
-                .as_mut()
-                .expect("SHA512 hasher not initialized")
-                .update(&unit8_array),
-            HashType::SHA3_256 => self
-                .sha3_256
-                .as_mut()
-                .expect("SHA3-256 hasher not initialized")
-                .update(&unit8_array),
-            HashType::SHA3_512 => self
-                .sha3_512
-                .as_mut()
-                .expect("SHA3-512 hasher not initialized")
-                .update(&unit8_array),
         }
     }
 
@@ -155,8 +159,8 @@ impl HasherWrapper {
     }
 
     #[wasm_bindgen(js_name = result)]
-    pub fn hash_result(&mut self) -> Result<HashResult, JsValue> {
-        self.update();
+    pub async fn hash_result(&mut self) -> Result<HashResult, JsValue> {
+        self.update().await;
         let result = self.finalize();
         Ok(HashResult {
             hex: result.encode_hex(),

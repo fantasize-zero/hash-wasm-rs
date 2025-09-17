@@ -2,7 +2,8 @@ use crate::hash::{hash_result::HashResult, hash_type::HashType, hasher_wrapper::
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
-pub fn sha256_hash(data: &JsValue) -> Result<HashResult, JsValue> {
-    let mut hasher = HasherWrapper::new(HashType::SHA256, data);
-    hasher.hash_result()
+pub async fn sha256_hash(data: &JsValue) -> Result<HashResult, JsValue> {
+    HasherWrapper::new(HashType::SHA256, data)
+        .hash_result()
+        .await
 }

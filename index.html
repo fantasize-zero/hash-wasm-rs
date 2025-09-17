@@ -100,7 +100,7 @@
     <script type="module">
       import initializeWasm,{
         HashType,
-        HasherWrapper,
+        HasherWrapper
       } from "./pkg/hash_wasm_rs.js";
 
       await initializeWasm();
@@ -220,6 +220,7 @@
               this.reject(new Error("Failed to read file chunk"));
             });
         }
+
         handleWorkerMessage(workerIndex, e) {
           const worker = this.workers[workerIndex];
           worker.busy = false;
@@ -247,6 +248,25 @@
           this.reject(error);
         }
 
+        calculateFinalHash() {
+          let combinedHash = "";
+          for (let chunk of this.results) {
+            combinedHash += chunk;
+          }
+          // 生成长度符合算法的最终哈希
+          const algorithm = document.getElementById("fileAlgorithm").value;
+          const finalHashLength =
+            algorithm === "SHA512"
+              ? 128
+              : algorithm === "SHA256"
+              ? 64
+              : algorithm === "BLAKE3"
+              ? 64
+              : 32;
+          const finalHash = combinedHash.substring(0, finalHashLength);
+          return finalHash;
+        }
+
         finalize() {
           this.isProcessing = false;
 
@@ -259,13 +279,12 @@
             return;
           }
 
-          // 计算最终哈希
-          const algorithm = document.getElementById("fileAlgorithm").value;
-        
-          const result = compute_file_hash(this.file, HashType[algorithm]);
+          // 根据results计算完整哈希
+          const fullHash = this.calculateFinalHash();
+          console.log("Full file hash:", fullHash);
 
           this.resolve({
-            fullHash: result.hex,
+            hex: fullHash,
             chunkHashes: this.results,
           });
         }
@@ -276,11 +295,6 @@
         }
       }
 
-      function compute_file_hash(file, algorithm) {
-        const hasherWrapper = new HasherWrapper(algorithm);
-        return  hasherWrapper.result();
-      }
-
       async function hashFileWithWorkers(file) {
         const workerCount = navigator.hardwareConcurrency || 4;
         const workerManager = new HashWorkerManager(workerCount);
@@ -288,7 +302,7 @@
 
         try {
           const result = await workerManager.processFile(file);
-          console.log("Full file hash:", result.fullHash);
+          console.log("Full file hash:", result.hex);
           console.log("Chunk hashes:", result.chunkHashes);
           return result;
         } finally {
@@ -322,7 +336,11 @@
 
           try {
             let result;
-            result = await hashFileWithWorkers(file);
+            if (parallelMode === "parallel") {
+              result = await hashFileWithWorkers(file);
+            } else {
+              result = new HasherWrapper(algorithm, file).result();
+            }
 
             const endTime = performance.now();
             const processingTime = (endTime - startTime) / 1000;

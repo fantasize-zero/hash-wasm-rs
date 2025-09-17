@@ -23,12 +23,14 @@ impl HashWorker {
 
     // 处理单个分片
     #[wasm_bindgen]
-    pub fn process_chunk(&mut self) -> Result<String, JsValue> {
-        let result = HasherWrapper::new(self.hash_type, &self.chunk_data).hash_result()?;
+    pub async fn process_chunk(&mut self) -> Result<String, JsValue> {
+        let result = HasherWrapper::new(self.hash_type, &self.chunk_data)
+            .hash_result()
+            .await;
 
-        self.hasher.update();
+        self.hasher.update().await;
 
-        Ok(result.hex)
+        Ok(result.unwrap().hex)
     }
 
     // 获取最终结果（整体文件的哈希）
