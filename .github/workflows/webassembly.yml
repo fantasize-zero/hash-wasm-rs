@@ -1,0 +1,37 @@
+name: Rust WebAssembly 包
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 安装 Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: 安装 wasm-pack
+        run: cargo install wasm-pack
+
+      - name: 构建 WebAssembly 包
+        run: wasm-pack build --release --target web
+
+      - name: 设置 Node.js 环境
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org/
+
+      - name: 发布到 Node Packages
+        working-directory: pkg
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}

@@ -1,0 +1,54 @@
+[package]
+name = "hash-wasm-rs"
+version = "0.1.0"
+edition = "2024"
+description = "A WebAssembly library for computing file hashes, built with Rust."
+homepage = "https://github.com/fantasize-zero"
+repository = "https://github.com/fantasize-zero/hash-wasm-rs"
+readme = "README.md"
+keywords = [
+  "hash",
+  "wasm",
+  "WebAssembly",
+  "Rust",
+  "sha256",
+  "sha512",
+  "sha3-256",
+  "sha3-512",
+  "md5",
+  "blake3",
+]
+categories = ["command-line-utilities"]
+authors = ["fantasize-zero <<1543865938@qq.com>>"]
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+blake3 = "1.8.2"
+hex = "0.4.3"
+js-sys = "0.3.78"
+md-5 = "0.10.6"
+rayon = "1.11.0"
+serde = { version = "1.0.219", features = ["derive"] }
+serde-wasm-bindgen = "0.6.5"
+serde_json = "1.0.143"
+sha2 = "0.10.9"
+sha3 = "0.10.8"
+wasm-bindgen = { version = "0.2.101", features = ["serde-serialize"] }
+wasm-bindgen-futures = "0.4.51"
+web-sys = { version = "0.3.78", features = [
+  "File",
+  "Blob",
+  "FileList",
+  "FileReader",
+  "Window",
+  "HtmlInputElement",
+  "Worker",
+  "MessageEvent",
+  "DedicatedWorkerGlobalScope",
+  "console",
+  "ProgressEvent",
+  "Event",
+] }
