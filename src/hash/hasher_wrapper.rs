@@ -1,13 +1,10 @@
-use std::hash::Hash;
-
 use crate::hash::{file_render::get_data_as_bytes, hash_result::HashResult, hash_type::HashType};
 use blake3::Hasher;
 use hex::ToHex;
-use js_sys::Uint8Array;
 use md5::{Digest, Md5};
 use sha2::{Sha256, Sha512};
 use sha3::{Sha3_256, Sha3_512};
-use wasm_bindgen::{convert::WasmAbi, prelude::*};
+use wasm_bindgen::prelude::*;
 
 pub const CHUNK_SIZE: usize = 1024 * 1024;
 
