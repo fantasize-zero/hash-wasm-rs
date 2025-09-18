@@ -100,14 +100,13 @@
     <script type="module">
       import initializeWasm,{
         HashType,
-        HasherWrapper,
-        md5
+        HasherWrapper
       } from "./pkg/hash_wasm_rs.js";
 
       await initializeWasm();
 
       class HashWorkerManager {
-        constructor(workerCount = 4) {
+        constructor(workerCount = 4, hashType = HashType.MD5) {
           this.workerCount = workerCount;
           this.workers = [];
           this.pendingJobs = 0;
@@ -119,6 +118,7 @@
           this.file = null;
           this.chunkSize = 0;
           this.isProcessing = false;
+          this.hashType = hashType;
 
           // 初始化 Workers
           for (let i = 0; i < workerCount; i++) {
@@ -199,7 +199,6 @@
           const worker = this.workers[workerIndex];
           worker.busy = true;
           this.pendingJobs++;
-          const algorithm = document.getElementById("fileAlgorithm").value;
           
           chunk
             .arrayBuffer()
@@ -209,7 +208,7 @@
                   type: "process",
                   data: arrayBuffer,
                   index: chunkIndex,
-                  algorithm: HashType[algorithm],
+                  hashType: this.hashType,
                 },
                 [arrayBuffer] // 传输所有权以提高性能
               );
@@ -252,9 +251,9 @@
 
 
       async calculateHash(left, right) {
-        let hasher = new HasherWrapper(HashType.MD5, left);
+        let hasher = new HasherWrapper(this.hashType, left);
         if (right) {
-          hasher = new HasherWrapper(HashType.MD5, left + right);
+          hasher = new HasherWrapper(this.hashType, left + right);
         }
         return await hasher.result();
       }
@@ -312,8 +311,9 @@
       }
 
       async function hashFileWithWorkers(file) {
+        const algorithm = document.getElementById("fileAlgorithm").value;
         const workerCount = navigator.hardwareConcurrency || 4;
-        const workerManager = new HashWorkerManager(workerCount);
+        const workerManager = new HashWorkerManager(workerCount, HashType[algorithm]);
         console.log("Worker count:", workerCount);
 
         try {

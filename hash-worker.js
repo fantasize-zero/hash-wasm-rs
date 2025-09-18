@@ -17,7 +17,7 @@ self.onmessage = async (e) => {
     if (data.type === "process") {
       const chunkData = new Uint8Array(data.data);
       const hasher = new self.WasmModule.HasherWrapper(
-        data.algorithm,
+        data.hashType,
         chunkData
       );
       const result = await hasher.result();
