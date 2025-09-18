@@ -27,6 +27,9 @@ jobs:
           node-version: 20
           registry-url: https://registry.npmjs.org/
 
+      - name: 构建 WebAssembly 库
+        run: RUSTFLAGS="-C target-feature=+simd128" wasm-pack build --release --target web
+
       - name: 检查包版本是否已存在
         id: check-version
         working-directory: pkg
@@ -43,10 +46,6 @@ jobs:
             echo "版本 $PACKAGE_VERSION 尚未发布，将继续发布"
             echo "should_publish=true" >> $GITHUB_OUTPUT
           fi
-
-      - name: 构建 WebAssembly 库
-        if: steps.check-version.outputs.should_publish == 'true'
-        run: RUSTFLAGS="-C target-feature=+simd128" wasm-pack build --release --target web
 
       - name: 发布到 Node Packages
         if: steps.check-version.outputs.should_publish == 'true'
