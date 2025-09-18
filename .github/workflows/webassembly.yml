@@ -22,51 +22,89 @@ jobs:
         run: cargo install wasm-pack
 
       - name: 构建 WebAssembly 包 (Web 目标)
-        run: wasm-pack build --release --target web --out-dir pkg-web
+        run: wasm-pack build --release --target web --out-dir pkg-web --out-name browser
 
       - name: 构建 WebAssembly 包 (Node.js 目标)
-        run: wasm-pack build --release --target nodejs --out-dir pkg-node
+        run: wasm-pack build --release --target nodejs --out-dir pkg-node --out-name node
 
       - name: 合并包以支持多环境
         run: |
           # 创建统一包目录
+          rm -rf pkg
           mkdir -p pkg
 
-          # 复制 Node.js 版本作为基础
-          cp -r pkg-node/* pkg/
+          # 复制 Node.js 版本文件
+          cp pkg-node/node.js pkg/
+          cp pkg-node/node_bg.wasm pkg/
 
-          # 为浏览器环境添加特定文件
-          cp pkg-web/*.wasm pkg/
-          cp pkg-web/*.js pkg/browser.js
+          # 复制 Web 版本文件
+          cp pkg-web/browser.js pkg/
+          cp pkg-web/browser_bg.wasm pkg/
+
+          # 复制其他共享文件
+          cp pkg-node/.gitignore pkg/
+          cp pkg-node/*.d.ts pkg/
+          cp pkg-node/README.md pkg/
+          cp pkg-node/package.json pkg/package.json
+
+          # 如果有 LICENSE 文件也复制
+          if [ -f "pkg-node/LICENSE" ]; then
+            cp pkg-node/LICENSE pkg/
+          fi
 
           # 修改 package.json 以支持多环境
           node <<EOF
           const fs = require('fs');
-          const pkg = require('./pkg/package.json');
+          const path = require('path');
 
-          // 添加浏览器入口点
-          pkg.browser = {
-            "./index.js": "./browser.js",
-            "./index_bg.js": "./index_bg.js"
+          const pkgPath = path.join(__dirname, 'pkg', 'package.json');
+          const pkgData = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+
+          // 设置浏览器和模块入口
+          pkgData.browser = {
+            "./node.js": "./browser.js",
+            "./node_bg.wasm": "./browser_bg.wasm"
           };
+          pkgData.module = "./browser.js";
 
-          // 添加模块入口点 (ES6)
-          pkg.module = "./browser.js";
-
-          // 添加类型声明
-          pkg.types = "./index.d.ts";
-
-          // 添加导出映射 (Node.js 14+)
-          pkg.exports = {
+          // 添加条件导出
+          pkgData.exports = {
             ".": {
               "import": "./browser.js",
-              "require": "./index.js",
-              "default": "./browser.js"
+              "require": "./node.js",
+              "browser": {
+                "import": "./browser.js",
+                "require": "./browser.js"
+              }
             },
             "./package.json": "./package.json"
           };
 
-          fs.writeFileSync('./pkg/package.json', JSON.stringify(pkg, null, 2));
+          // 确保 files 字段包含所有要发布的文件
+          // 先确保 files 字段存在且是一个数组
+          if (!Array.isArray(pkgData.files)) {
+            pkgData.files = [];
+          }
+
+          // 添加所有必要的文件到 files 字段
+          const requiredFiles = [
+            "node.js",
+            "node_bg.wasm",
+            "browser.js",
+            "browser_bg.wasm",
+            "*.d.ts",
+            "README.md",
+            "LICENSE"
+          ];
+
+          // 只添加尚未存在的文件
+          requiredFiles.forEach(file => {
+            if (!pkgData.files.includes(file)) {
+              pkgData.files.push(file);
+            }
+          });
+
+          fs.writeFileSync(pkgPath, JSON.stringify(pkgData, null, 2));
           EOF
 
       - name: 设置 Node.js 环境

@@ -3,7 +3,7 @@ importScripts("https://unpkg.com/comlink/dist/umd/comlink.js");
 // 初始化 WASM 模块
 async function initWasm() {
   if (!self.WasmModule) {
-    const wasmModule = await import("./pkg/hash_wasm_rs.js");
+    const wasmModule = await import("./pkg/browser.js");
     await wasmModule.default();
     self.WasmModule = wasmModule;
   }
