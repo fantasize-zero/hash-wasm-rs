@@ -15,7 +15,8 @@ pkgData.files = [
 
 pkgData.scripts = {
   dev: "rollup --config rollup.config.ts --configPlugin swc3 --watch",
-  build: "pnpm rm:dist && rollup --config rollup.config.ts --configPlugin swc3",
+  build:
+    "npm run rm:dist && rollup --config rollup.config.ts --configPlugin swc3",
   test: "jest --coverage",
   "rm:dist": "rm -rf ./dist",
 };
