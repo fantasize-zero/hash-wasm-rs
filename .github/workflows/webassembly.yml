@@ -21,8 +21,53 @@ jobs:
       - name: 安装 wasm-pack
         run: cargo install wasm-pack
 
-      - name: 构建 WebAssembly 包
-        run: wasm-pack build --release --target web
+      - name: 构建 WebAssembly 包 (Web 目标)
+        run: wasm-pack build --release --target web --out-dir pkg-web
+
+      - name: 构建 WebAssembly 包 (Node.js 目标)
+        run: wasm-pack build --release --target nodejs --out-dir pkg-node
+
+      - name: 合并包以支持多环境
+        run: |
+          # 创建统一包目录
+          mkdir -p pkg
+
+          # 复制 Node.js 版本作为基础
+          cp -r pkg-node/* pkg/
+
+          # 为浏览器环境添加特定文件
+          cp pkg-web/*.wasm pkg/
+          cp pkg-web/*.js pkg/browser.js
+
+          # 修改 package.json 以支持多环境
+          node <<EOF
+          const fs = require('fs');
+          const pkg = require('./pkg/package.json');
+
+          // 添加浏览器入口点
+          pkg.browser = {
+            "./index.js": "./browser.js",
+            "./index_bg.js": "./index_bg.js"
+          };
+
+          // 添加模块入口点 (ES6)
+          pkg.module = "./browser.js";
+
+          // 添加类型声明
+          pkg.types = "./index.d.ts";
+
+          // 添加导出映射 (Node.js 14+)
+          pkg.exports = {
+            ".": {
+              "import": "./browser.js",
+              "require": "./index.js",
+              "default": "./browser.js"
+            },
+            "./package.json": "./package.json"
+          };
+
+          fs.writeFileSync('./pkg/package.json', JSON.stringify(pkg, null, 2));
+          EOF
 
       - name: 设置 Node.js 环境
         uses: actions/setup-node@v4
