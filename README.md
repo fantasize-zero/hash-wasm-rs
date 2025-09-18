@@ -40,10 +40,9 @@ console.log(result.hex);
 
 ```bash
 # Build WebAssembly library
-wasm-pack build --release --target nodejs --out-dir pkg-node --out-name node
-wasm-pack build --release --target web --out-dir pkg-web --out-name browser
+wasm-pack build --release --target web
 # Build WebAssembly library with SIMD support
-RUSTFLAGS="-C target-feature=+simd128" wasm-pack build --release --target web --out-dir pkg-web --out-name browser
+RUSTFLAGS="-C target-feature=+simd128" wasm-pack build --release --target web
 
 # Serve the demo page
 python3 -m http.server

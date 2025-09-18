@@ -1,12 +1,1 @@
-src/node/*
-!src/node/index.ts
-src/browser/*
-!src/browser/index.ts
-LICENSE
-README.md
-package.json
-
-dist
-node_modules
-package-lock.json
-pnpm-lock.yaml
+*
