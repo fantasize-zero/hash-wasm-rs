@@ -1,1 +1,1 @@
-export * from "./browser";
+export * from "../../pkg-web/browser";

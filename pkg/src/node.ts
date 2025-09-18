@@ -1,1 +1,1 @@
-export * from "./node";
+export * from "../../pkg-node/node";

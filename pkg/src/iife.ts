@@ -1,3 +1,3 @@
-import * as HashWasmRs from ".";
+import * as wasm from "../../pkg-web/browser";
 
-export default HashWasmRs;
+export default wasm;
