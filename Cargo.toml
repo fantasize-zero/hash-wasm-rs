@@ -1,6 +1,6 @@
 [package]
 name = "hash-wasm-rs"
-version = "1.0.1"
+version = "1.0.2"
 edition = "2024"
 description = "A WebAssembly library for computing file hashes, built with Rust."
 homepage = "https://github.com/fantasize-zero"

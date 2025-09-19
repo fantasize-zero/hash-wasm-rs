@@ -9,11 +9,6 @@ pub struct HashResult {
 
 #[wasm_bindgen]
 impl HashResult {
-    // #[wasm_bindgen(constructor)]
-    // pub fn new(hex: String, bytes: Vec<u8>) -> HashResult {
-    //     HashResult { hex, bytes }
-    // }
-
     #[wasm_bindgen(getter)]
     pub fn hex(&self) -> String {
         self.hex.clone()

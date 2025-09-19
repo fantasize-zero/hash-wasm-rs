@@ -2,8 +2,8 @@ use crate::hash::{file_render::get_data_as_bytes, hash_result::HashResult, hash_
 use blake3::Hasher;
 use hex::ToHex;
 use md5::{Digest, Md5};
-use sha2::{Sha256, Sha512};
-use sha3::{Sha3_256, Sha3_512};
+use sha2::{Sha224, Sha256, Sha384, Sha512};
+use sha3::{Sha3_224, Sha3_256, Sha3_384, Sha3_512};
 use wasm_bindgen::prelude::*;
 
 pub const CHUNK_SIZE: usize = 1024 * 1024;
@@ -33,9 +33,13 @@ pub struct HasherWrapper {
     hash_type: HashType,
     md5: Option<Md5>,
     blake3: Option<Hasher>,
+    sha224: Option<Sha224>,
     sha256: Option<Sha256>,
+    sha384: Option<Sha384>,
     sha512: Option<Sha512>,
+    sha3_224: Option<Sha3_224>,
     sha3_256: Option<Sha3_256>,
+    sha3_384: Option<Sha3_384>,
     sha3_512: Option<Sha3_512>,
 }
 
@@ -46,9 +50,13 @@ impl HasherWrapper {
         let mut wrapper = HasherWrapper {
             input: input.into(),
             hash_type,
+            sha224: None,
             sha256: None,
+            sha384: None,
             sha512: None,
+            sha3_224: None,
             sha3_256: None,
+            sha3_384: None,
             sha3_512: None,
             md5: None,
             blake3: None,
@@ -57,9 +65,13 @@ impl HasherWrapper {
         match hash_type {
             HashType::MD5 => wrapper.md5 = Some(Md5::new()),
             HashType::BLAKE3 => wrapper.blake3 = Some(Hasher::new()),
+            HashType::SHA224 => wrapper.sha224 = Some(Sha224::new()),
             HashType::SHA256 => wrapper.sha256 = Some(Sha256::new()),
+            HashType::SHA384 => wrapper.sha384 = Some(Sha384::new()),
             HashType::SHA512 => wrapper.sha512 = Some(Sha512::new()),
+            HashType::SHA3_224 => wrapper.sha3_224 = Some(Sha3_224::new()),
             HashType::SHA3_256 => wrapper.sha3_256 = Some(Sha3_256::new()),
+            HashType::SHA3_384 => wrapper.sha3_384 = Some(Sha3_384::new()),
             HashType::SHA3_512 => wrapper.sha3_512 = Some(Sha3_512::new()),
         }
 
@@ -80,20 +92,41 @@ impl HasherWrapper {
                         .expect("BLAKE3 hasher not initialized")
                         .update(&data_array);
                 }
+                HashType::SHA224 => self
+                    .sha224
+                    .as_mut()
+                    .expect("SHA224 hasher not initialized")
+                    .update(&data_array),
+
                 HashType::SHA256 => self
                     .sha256
                     .as_mut()
                     .expect("SHA256 hasher not initialized")
+                    .update(&data_array),
+                HashType::SHA384 => self
+                    .sha384
+                    .as_mut()
+                    .expect("SHA384 hasher not initialized")
                     .update(&data_array),
                 HashType::SHA512 => self
                     .sha512
                     .as_mut()
                     .expect("SHA512 hasher not initialized")
                     .update(&data_array),
+                HashType::SHA3_224 => self
+                    .sha3_224
+                    .as_mut()
+                    .expect("SHA3-224 hasher not initialized")
+                    .update(&data_array),
                 HashType::SHA3_256 => self
                     .sha3_256
                     .as_mut()
                     .expect("SHA3-256 hasher not initialized")
+                    .update(&data_array),
+                HashType::SHA3_384 => self
+                    .sha3_384
+                    .as_mut()
+                    .expect("SHA3-384 hasher not initialized")
                     .update(&data_array),
                 HashType::SHA3_512 => self
                     .sha3_512
@@ -124,10 +157,24 @@ impl HasherWrapper {
                 .finalize()
                 .as_bytes()
                 .to_vec(),
+            HashType::SHA224 => self
+                .sha224
+                .as_mut()
+                .expect("SHA224 hasher not initialized")
+                .clone()
+                .finalize()
+                .to_vec(),
             HashType::SHA256 => self
                 .sha256
                 .as_mut()
                 .expect("SHA256 hasher not initialized")
+                .clone()
+                .finalize()
+                .to_vec(),
+            HashType::SHA384 => self
+                .sha384
+                .as_mut()
+                .expect("SHA384 hasher not initialized")
                 .clone()
                 .finalize()
                 .to_vec(),
@@ -138,10 +185,24 @@ impl HasherWrapper {
                 .clone()
                 .finalize()
                 .to_vec(),
+            HashType::SHA3_224 => self
+                .sha3_224
+                .as_mut()
+                .expect("SHA3-224 hasher not initialized")
+                .clone()
+                .finalize()
+                .to_vec(),
             HashType::SHA3_256 => self
                 .sha3_256
                 .as_mut()
                 .expect("SHA3-256 hasher not initialized")
+                .clone()
+                .finalize()
+                .to_vec(),
+            HashType::SHA3_384 => self
+                .sha3_384
+                .as_mut()
+                .expect("SHA3-384 hasher not initialized")
                 .clone()
                 .finalize()
                 .to_vec(),

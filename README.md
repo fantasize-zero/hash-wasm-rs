@@ -8,9 +8,8 @@ A WebAssembly library for computing hashes, built with Rust.
 | ----------------------------------------------  
 | BLAKE3  
 | MD5  
-| SHA-2: SHA-224, SHA-256  
-| SHA-3: SHA3-256, SHA3-512
-| SHA-512
+| SHA: SHA-224, SHA-256, SHA-384, SHA-512
+| SHA-3: SHA3-224, SHA3-256, SHA3-384, SHA3-512
 
 # Installation
 

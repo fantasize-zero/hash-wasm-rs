@@ -41,49 +41,7 @@ pub async fn get_file_uint8array_and_blob(file: &File) -> Result<GetFileResult, 
     })
 }
 
-// 新增：分块处理文件的函数
 #[wasm_bindgen]
-pub async fn process_file_in_chunks(
-    file: &File,
-    chunk_size: usize,
-    process_chunk: js_sys::Function,
-) -> Result<JsValue, JsValue> {
-    let total_size = file.size() as usize;
-    let mut offset = 0;
-
-    while offset < total_size {
-        let end = std::cmp::min(offset + chunk_size, total_size);
-        let blob = file.slice_with_i32_and_i32(offset as i32, end as i32)?;
-
-        // 读取当前块
-        let file_reader = FileReader::new()?;
-        let promise = js_sys::Promise::new(&mut |resolve, reject| {
-            file_reader.set_onload(Some(&resolve));
-            file_reader.set_onerror(Some(&reject));
-            if let Err(e) = file_reader.read_as_array_buffer(&blob) {
-                let _ = reject.call1(&JsValue::NULL, &e);
-            }
-        });
-
-        let _ = JsFuture::from(promise).await?;
-        let js_array_buffer: JsValue = file_reader.result()?;
-        let array_buffer: ArrayBuffer = js_array_buffer.dyn_into()?;
-        let chunk_data = Uint8Array::new(&array_buffer).to_vec();
-
-        // 调用处理函数处理当前块
-        let this = JsValue::NULL;
-        let chunk_js = Uint8Array::from(chunk_data.as_slice()).into();
-        let offset_js = JsValue::from(offset as f64);
-        let total_js = JsValue::from(total_size as f64);
-
-        process_chunk.call3(&this, &chunk_js, &offset_js, &total_js)?;
-
-        offset = end;
-    }
-
-    Ok(JsValue::UNDEFINED)
-}
-
 pub async fn get_data_as_bytes(data: &JsValue) -> Result<Vec<u8>, JsValue> {
     if let Some(uint8_array) = data.dyn_ref::<Uint8Array>() {
         Ok(uint8_array.to_vec())
