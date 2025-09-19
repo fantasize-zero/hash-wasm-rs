@@ -54,7 +54,7 @@ onMounted(async () => {
 });
 ```
 
-## Development
+# Development
 
 ```bash
 # Build package WebAssembly library
