@@ -2,45 +2,65 @@
 
 A WebAssembly library for computing hashes, built with Rust.
 
-## Features
+# Supported algorithms
 
-- Supports multiple hash algorithms: SHA-256, SHA-512, SHA3-256, SHA3-512, MD5, BLAKE3.
+| Name  
+| ----------------------------------------------  
+| BLAKE3  
+| MD5  
+| SHA-2: SHA-224, SHA-256  
+| SHA-3: SHA3-256, SHA3-512
+| SHA-512
 
-## Installation
+# Installation
 
 ```bash
 pnpm add hash-wasm-rs
 ```
 
-## Usage
-
-```javascript
-import initWasm, { HasherWrapper, HashType } from "hash-wasm-rs";
-
-await initWasm();
-
-// Compute hash from text input
-const text = "Hello, world!";
-const hasher = new HasherWrapper(HashType.MD5, text);
-const result = await hasher.result();
-console.log(result.hex);
-
-// Compute hash from file data
-const file = new File(["Hello, world!"], "hello.txt");
-const hasher = new HasherWrapper(HashType.MD5, file);
-const result = await hasher.result();
-console.log(result.hex);
-```
-
-## Example usage
+# HTML Example usage
 
 [Example large file hash calculation](./index.html)
+
+# Vite Example usage
+
+```bash
+pnpm add vite-plugin-wasm
+```
+
+### vite.config.ts
+
+```javascript
+import { defineConfig } from "vite";
+import wasm from "vite-plugin-wasm";
+
+export default defineConfig(({ mode }) => ({
+  plugins: [wasm()],
+}));
+```
+
+### app.vue
+
+```javascript
+onMounted(async () => {
+  try {
+    const $hashWasmRs = await import("hash-wasm-rs");
+    const result = await $hashWasmRs.md5("Hello, world!");
+    console.log(result.hex);
+    result.free();
+  } catch (error) {
+    console.error("WASM error:", error);
+  }
+});
+```
 
 ## Development
 
 ```bash
-# Build WebAssembly library
-wasm-pack build --release --target web
+# Build package WebAssembly library
+wasm-pack build --release
+# Build HTML WebAssembly library
+wasm-pack build --release --target web --out-dir pkg-web
 # Build WebAssembly library with SIMD support
 RUSTFLAGS="-C target-feature=+simd128" wasm-pack build --release --target web
 

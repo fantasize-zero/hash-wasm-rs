@@ -1,3 +1,6 @@
+<!-- Before running index.html, you need to execute: wasm-pack build --release --target web --out-dir pkg-web
+wasm-pack build --release --target web --out-dir pkg-web -->
+
 <!DOCTYPE html>
 <html>
   <head>
@@ -101,7 +104,7 @@
       import initializeWasm,{
         HashType,
         HasherWrapper
-      } from "./pkg/hash_wasm_rs.js";
+      } from "./pkg-web/hash_wasm_rs.js";
 
       await initializeWasm();
 

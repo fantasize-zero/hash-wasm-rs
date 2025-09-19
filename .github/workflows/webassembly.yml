@@ -28,7 +28,7 @@ jobs:
           registry-url: https://registry.npmjs.org/
 
       - name: 构建 WebAssembly 库
-        run: RUSTFLAGS="-C target-feature=+simd128" wasm-pack build --release --target web
+        run: RUSTFLAGS="-C target-feature=+simd128" wasm-pack build --release
 
       - name: 检查包版本是否已存在
         id: check-version
