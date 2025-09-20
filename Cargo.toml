@@ -6,18 +6,7 @@ description = "A WebAssembly library for computing file hashes, built with Rust.
 homepage = "https://github.com/fantasize-zero"
 repository = "https://github.com/fantasize-zero/hash-wasm-rs"
 readme = "README.md"
-keywords = [
-  "hash",
-  "wasm",
-  "WebAssembly",
-  "Rust",
-  "sha256",
-  "sha512",
-  "sha3-256",
-  "sha3-512",
-  "md5",
-  "blake3",
-]
+keywords = ["hash", "wasm", "webassembly", "Rust"]
 categories = ["command-line-utilities"]
 authors = ["fantasize-zero <<1543865938@qq.com>>"]
 license = "MIT"
