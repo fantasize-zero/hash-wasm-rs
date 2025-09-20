@@ -3,7 +3,7 @@ name: Rust WebAssembly 包
 on:
   push:
     branches:
-      - main
+      - cargo-package
 
 jobs:
   build-and-publish:
@@ -21,25 +21,23 @@ jobs:
       - name: 安装 wasm-pack
         run: cargo install wasm-pack
 
-      - name: 设置 Node.js 环境
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          registry-url: https://registry.npmjs.org/
+      - name: 登陆 crates.io
+        run: cargo login ${{ secrets.CRATES_IO_TOKEN }}
 
-      - name: 构建 WebAssembly 库
-        run: RUSTFLAGS="-C target-feature=+simd128" wasm-pack build --release
+      - name: 打包 Rust 包
+        run: cargo package
+        # 添加错误处理，确保只在成功打包时尝试发布
+        continue-on-error: false
 
       - name: 检查包版本是否已存在
         id: check-version
-        working-directory: pkg
         run: |
           # 获取当前包名和版本
-          PACKAGE_NAME=$(node -p "require('./package.json').name")
-          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          PACKAGE_NAME=$(cargo metadata --format-version 1 --no-deps | jq -r '.packages[0].name')
+          PACKAGE_VERSION=$(cargo metadata --format-version 1 --no-deps | jq -r '.packages[0].version')
 
-          # 检查该版本是否已在npm上发布
-          if npm view $PACKAGE_NAME@$PACKAGE_VERSION version >/dev/null 2>&1; then
+          # 检查该版本是否已在crates.io上发布
+          if cargo search $PACKAGE_NAME | grep -q $PACKAGE_VERSION; then
             echo "版本 $PACKAGE_VERSION 已存在，跳过发布"
             echo "should_publish=false" >> $GITHUB_OUTPUT
           else
@@ -47,9 +45,6 @@ jobs:
             echo "should_publish=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: 发布到 Node Packages
+      - name: 发布到 crates.io
         if: steps.check-version.outputs.should_publish == 'true'
-        working-directory: pkg
-        run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+        run: cargo publish
