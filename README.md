@@ -17,6 +17,12 @@ A WebAssembly library for computing hashes, built with Rust.
 pnpm add hash-wasm-rs
 ```
 
+# Cargo Example Installation
+
+```bash
+cargo install hash-wasm-rs
+```
+
 # HTML Example usage
 
 [Example large file hash calculation](./index.html)

@@ -21,6 +21,8 @@ keywords = [
 categories = ["command-line-utilities"]
 authors = ["fantasize-zero <<1543865938@qq.com>>"]
 license = "MIT"
+include = ["src/**/*.rs", "Cargo.toml", "README.md", "/LICENSE"]
+exclude = ["pkg-web", "pkg"]
 
 [lib]
 crate-type = ["cdylib"]
